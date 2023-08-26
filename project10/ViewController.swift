@@ -41,6 +41,26 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let person = people[indexPath.item]
         
+        let firstAlert = UIAlertController(title: "Choose the action", message: nil, preferredStyle: .alert)
+        firstAlert.addAction(UIAlertAction(title: "Delete", style: .cancel){
+            [weak self] _ in
+            self?.removePerson(person)
+            self?.collectionView.reloadData()
+        })
+        
+        firstAlert.addAction(UIAlertAction(title: "Rename", style: .default){
+            [weak self] _ in
+            self?.renamePerson(person)})
+        
+        present(firstAlert, animated: true)
+    }
+    
+    func removePerson(_ person: Person) {
+        let indexOfPerson = people.firstIndex(of: person)
+        people.remove(at: indexOfPerson!)
+    }
+    
+    func renamePerson(_ person: Person) {
         let ac = UIAlertController(title: "Rename person", message: nil, preferredStyle: .alert)
         ac.addTextField()
         
