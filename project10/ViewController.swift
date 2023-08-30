@@ -15,6 +15,13 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         super.viewDidLoad()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewPerson))
+        
+        let defaults = UserDefaults.standard
+        if let savedPeople = defaults.object(forKey: "people") as? Data {
+            if let decodedPeople = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(savedPeople) as? [Person]{
+                people = decodedPeople
+            }
+        }
     }
 
     override func collectionView( _ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -45,12 +52,13 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         firstAlert.addAction(UIAlertAction(title: "Delete", style: .cancel){
             [weak self] _ in
             self?.removePerson(person)
-            self?.collectionView.reloadData()
         })
         
         firstAlert.addAction(UIAlertAction(title: "Rename", style: .default){
             [weak self] _ in
-            self?.renamePerson(person)})
+            self?.renamePerson(person)
+            
+        })
         
         present(firstAlert, animated: true)
     }
@@ -58,6 +66,8 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
     func removePerson(_ person: Person) {
         let indexOfPerson = people.firstIndex(of: person)
         people.remove(at: indexOfPerson!)
+        self.save()
+        self.collectionView.reloadData()
     }
     
     func renamePerson(_ person: Person) {
@@ -67,6 +77,7 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         ac.addAction(UIAlertAction(title: "OK", style: .default){ [weak self, weak ac] _ in
             guard let newName = ac?.textFields?[0].text else { return }
             person.name = newName
+            self?.save()
             self?.collectionView.reloadData()
         })
         
@@ -78,9 +89,10 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         let picker = UIImagePickerController()
         picker.allowsEditing = true
         picker.delegate = self
-        if UIImagePickerController.isSourceTypeAvailable(.camera){
+        /*if UIImagePickerController.isSourceTypeAvailable(.camera){
             picker.sourceType = .camera
         }
+        */
         present(picker, animated: true)
     }
     
@@ -96,6 +108,7 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         
         let person = Person(name: "Unknown", image: imageName)
         people.append(person)
+        save()
         collectionView?.reloadData()
         
         dismiss(animated: true)
@@ -104,6 +117,13 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
     func getDocumentsDirectory() -> URL {
         let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return path[0]
+    }
+    
+    func save() {
+        if let saveddata = try?NSKeyedArchiver.archivedData(withRootObject: people, requiringSecureCoding: false) {
+            let defaults = UserDefaults.standard
+            defaults.set(saveddata, forKey: "people")
+        }
     }
 }
 
