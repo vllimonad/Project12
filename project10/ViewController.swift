@@ -22,6 +22,7 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
                 people = decodedPeople
             }
         }
+        
     }
 
     override func collectionView( _ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -93,6 +94,7 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
             picker.sourceType = .camera
         }
         */
+        var aladj = UILabel()
         present(picker, animated: true)
     }
     
